@@ -1,7 +1,7 @@
 import { StatusBar } from 'expo-status-bar';
 import {ActivityIndicator, FlatList, Platform, Pressable, StyleSheet, Text, View} from 'react-native';
 import {router, useLocalSearchParams, useNavigation} from "expo-router";
-import React, {useEffect} from "react";
+import React, {useCallback, useEffect} from "react";
 import {useGetPhotosQuery} from "@/store/services/api";
 import { Image } from 'expo-image';
 import {BLUR_HASH} from "@/constants/config";
@@ -29,8 +29,7 @@ export default function PhotoList() {
     }, []);
 
     type PhotoItemProps = {src: string, photoID: number};
-
-    const PhotoItem = ({src, photoID}: PhotoItemProps) => (
+    const renderPhotoItem = useCallback(({src, photoID}: PhotoItemProps) => (
         <Pressable
             style={styles.item}
             onPress={() => router.navigate({ pathname: "/photoShow", params: { source: src, photoID: photoID } })}
@@ -43,8 +42,7 @@ export default function PhotoList() {
                 transition={1000}
             />
         </Pressable>
-    );
-
+    ), []);
     return (
         <View style={styles.container}>
             {isLoadingPhotos ?
@@ -52,7 +50,7 @@ export default function PhotoList() {
                 :
                 <FlatList
                     data={photosData?.photos}
-                    renderItem={({item}) => <PhotoItem src={item.img_src} photoID={item.id} />}
+                    renderItem={({item}) => renderPhotoItem({src: item.img_src, photoID: item.id})}
                     keyExtractor={(item) => item.id.toString()}
                     numColumns={3}
                 />
